@@ -10,9 +10,16 @@ import psycopg
 FIELDNAMES = ("parent_asset_key", "child_asset_key", "relation_type")
 
 
+class ValidationErrors(Exception):
+    def __init__(self, errors: list[str]):
+        super().__init__("\n".join(errors))
+        self.errors = errors
+
+
 def import_relations(csv_path: Path) -> tuple[int, int]:
     inserted = 0
     skipped = 0
+    errors: list[str] = []
     with csv_path.open("r", encoding="utf-8-sig", newline="") as csv_file:
         reader = csv.DictReader(csv_file, delimiter=";")
         if reader.fieldnames != list(FIELDNAMES):
@@ -26,9 +33,10 @@ def import_relations(csv_path: Path) -> tuple[int, int]:
                 for row in reader:
                     line_number = reader.line_num
                     if None in row:
-                        raise ValueError(
+                        errors.append(
                             f"Wiersz {line_number}: za duzo kolumn."
                         )
+                        continue
                     if all(
                         value is None or not value.strip()
                         for value in row.values()
@@ -39,15 +47,17 @@ def import_relations(csv_path: Path) -> tuple[int, int]:
                     child_key = (row["child_asset_key"] or "").strip()
                     relation_type = (row["relation_type"] or "").strip()
                     if not parent_key or not child_key or not relation_type:
-                        raise ValueError(
+                        errors.append(
                             f"Wiersz {line_number}: parent_asset_key, "
                             "child_asset_key i relation_type sa wymagane."
                         )
+                        continue
                     if parent_key == child_key:
-                        raise ValueError(
+                        errors.append(
                             f"Wiersz {line_number}: zasob nie moze byc "
                             "powiazany sam ze soba."
                         )
+                        continue
 
                     cursor.execute(
                         """
@@ -61,15 +71,17 @@ def import_relations(csv_path: Path) -> tuple[int, int]:
                     )
                     parent_id, child_id = cursor.fetchone()
                     if parent_id is None:
-                        raise ValueError(
+                        errors.append(
                             f"Wiersz {line_number}: nie znaleziono zasobu "
                             f"parent_asset_key={parent_key!r}."
                         )
                     if child_id is None:
-                        raise ValueError(
+                        errors.append(
                             f"Wiersz {line_number}: nie znaleziono zasobu "
                             f"child_asset_key={child_key!r}."
                         )
+                    if parent_id is None or child_id is None:
+                        continue
 
                     cursor.execute(
                         """
@@ -87,6 +99,9 @@ def import_relations(csv_path: Path) -> tuple[int, int]:
                     else:
                         skipped += 1
 
+                if errors:
+                    raise ValidationErrors(errors)
+
     return inserted, skipped
 
 
@@ -97,17 +112,26 @@ def main() -> int:
     parser.add_argument(
         "csv_file",
         nargs="?",
-        default=os.environ.get("RELATIONS_CSV_FILE", "/data/mdb_relations.csv"),
+        default=os.environ.get("RELATIONS_CSV_FILE", "./data/cmdb_relations.csv"),
         type=Path,
         help=(
             "Sciezka do cmdb_relations.csv "
-            "(domyslnie: /data/mdb_relations.csv)."
+            "(domyslnie: ./data/cmdb_relations.csv)."
         ),
     )
     args = parser.parse_args()
 
     try:
         inserted, skipped = import_relations(args.csv_file)
+    except ValidationErrors as error:
+        print(
+            f"Blad importu relacji ({len(error.errors)}); "
+            "nic nie zapisano:",
+            file=sys.stderr,
+        )
+        for message in error.errors:
+            print(f"  {message}", file=sys.stderr)
+        return 1
     except (OSError, UnicodeError, csv.Error, psycopg.Error, ValueError) as error:
         print(f"Blad importu relacji: {error}", file=sys.stderr)
         return 1

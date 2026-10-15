@@ -190,10 +190,10 @@ def main() -> int:
         "csv_file",
         nargs="?",
         default=os.environ.get(
-            "CERTIFICATES_CSV_FILE", "/data/tenable_certificates.csv"
+            "CERTIFICATES_CSV_FILE", "./data/tenable_certificates.csv"
         ),
         type=Path,
-        help="Sciezka do tenable_certificates.csv.",
+        help="Sciezka do tenable_certificates.csv (domyslnie: ./data/tenable_certificates.csv).",
     )
     parser.add_argument(
         "--error-report",

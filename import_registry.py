@@ -78,7 +78,7 @@ def main() -> int:
     parser.add_argument(
         "csv_file",
         nargs="?",
-        default=os.environ.get("CSV_FILE", "/data/cmdb_assets.csv"),
+        default=os.environ.get("CSV_FILE", "./data/cmdb_assets.csv"),
         type=Path,
         help="Sciezka do cmdb_assets.csv (domyslnie: /data/cmdb_assets.csv).",
     )
