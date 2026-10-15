@@ -1,0 +1,4 @@
+parent_asset_key;child_asset_key;relation_type
+SYS-001;APP-001;CONTAINS
+APP-001;SRV-001;RUNS_ON
+APP-001;SRV-002;RUNS_ON

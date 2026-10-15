@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cert_registry}
+      POSTGRES_USER: ${POSTGRES_USER:-cert_registry}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting Docker Compose}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  importer:
+    build: .
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: ${POSTGRES_DB:-cert_registry}
+      PGUSER: ${POSTGRES_USER:-cert_registry}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting Docker Compose}
+      DATABASE_URL: ""
+      CERTIFICATE_ERROR_REPORT: /reports/tenable_certificates_errors.csv
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ${CSV_DIR:-./data}:/data:ro
+      - ./reports:/reports
+
+volumes:
+  postgres_data:

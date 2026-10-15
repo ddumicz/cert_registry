@@ -1,0 +1,16 @@
+{
+  "name": "cert_registry",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/cert_registry",
+  "forwardPorts": [5432],
+  "postCreateCommand": "python -m pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-ossdata.vscode-pgsql"
+      ]
+    }
+  }
+}

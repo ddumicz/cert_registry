@@ -1,0 +1,5 @@
+asset_key;asset_name;asset_type;ip_address
+SYS-001;Bankowość internetowa;SYSTEM;
+APP-001;Frontend WWW;APPLICATION;
+SRV-001;srv-web-01;SERVER;10.10.1.15
+SRV-002;srv-web-02;SERVER;10.10.1.16

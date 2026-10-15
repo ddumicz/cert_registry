@@ -1,0 +1,4 @@
+ip_address;sha256;subject;issuer;valid_to
+10.10.1.15;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;CN=www.bank.pl;CN=Example CA;2027-03-10
+10.10.1.16;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;CN=www.bank.pl;CN=Example CA;2027-03-10
+10.10.1.15;bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb;CN=api.bank.pl;CN=Example CA;2027-06-15
